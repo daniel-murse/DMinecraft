@@ -1,4 +1,6 @@
-﻿using DMinecraft.PhysicalClient.Scheduling;
+﻿using DMinecraft.PhysicalClient.Scenes;
+using DMinecraft.PhysicalClient.Scenes.Init;
+using DMinecraft.PhysicalClient.Scheduling;
 using DMinecraft.PhysicalClient.Windowing;
 using OpenTK.Windowing.Desktop;
 using Serilog;
@@ -9,6 +11,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using OpenTK.Graphics.OpenGL4;
 
 namespace DMinecraft
 {
@@ -21,7 +24,7 @@ namespace DMinecraft
         {
             public App(string[] args)
             {
-                this.settings = new AppSettings(args);
+                this.settings = new AppSettings(args) { ContentRootPath = "c:/users/danie/dminecraft/content/"};
                 this.window = new AppWindow(settings.WindowSettings);
                 //todo use when a logger is passed
                 //new LoggerConfiguration().WriteTo.Logger
@@ -48,6 +51,8 @@ namespace DMinecraft
             private LoopStage updateLoopStage;
 
             private LoopStage renderLoopStage;
+
+            private IScene scene;
 
             public void Run()
             {
@@ -77,6 +82,10 @@ namespace DMinecraft
                         logger?.Error("Could not enable a high period timer.");
                     }
                 }
+                else if (settings.EnableSleep)
+                {
+                    logger?.Warning("Sleep enabled without a high period timer.");
+                }
 
                 updateLoopStage = new LoopStage(settings.UpdateFrequency, this.OnUpdate);
                 renderLoopStage = new LoopStage(settings.RenderFrequency, this.OnRender);
@@ -84,16 +93,33 @@ namespace DMinecraft
                 loop = new Loop(new LoopStage[] {updateLoopStage, renderLoopStage});
                 loop.SleepError = settings.SleepError;
                 loop.DoSleeping = settings.EnableSleep;
+
+                window.Resize += OnWindowResize;
+
+                scene = new InitScene(new Graphics.OpenGL.GLObjects.GLContext("dminecraft"), new InitSceneSettings()
+                { ContentRoot = "c:/users/danie/desktop/dminecraft/content" });
+            }
+
+            private void OnWindowResize(OpenTK.Windowing.Common.ResizeEventArgs obj)
+            {
+                GL.Viewport(0, 0, obj.Width, obj.Height);
             }
 
             private void OnRender(TimeSpan deltaTime)
             {
-                Console.WriteLine("Render");
+                scene.Render(deltaTime);
+                window.Context.SwapBuffers();
             }
 
             private void OnUpdate(TimeSpan deltaTime)
             {
-                Console.WriteLine("Update");
+                //CARE glfw (the current impl) causes this to process events or all windows
+                //and must be called from the main thread
+                //ideally u change impl sometime, not even for functionality necessarily, but for
+                //fun and code
+                window.ProcessEvents();
+
+                scene.Update(deltaTime);
             }
 
             private void DisposeUnmanaged()

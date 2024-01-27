@@ -1,4 +1,5 @@
 ﻿using DMinecraft.PhysicalClient.Windowing;
+using System.Diagnostics.CodeAnalysis;
 
 namespace DMinecraft.PhysicalClient
 {
@@ -17,6 +18,7 @@ namespace DMinecraft.PhysicalClient
             RenderFrequency = appSettings.RenderFrequency;
         }
 
+        [SetsRequiredMembers]
         public AppSettings() 
         {
             WindowSettings = new AppWindowSettings();
@@ -26,14 +28,16 @@ namespace DMinecraft.PhysicalClient
             SleepError = TimeSpan.FromMilliseconds(1);
             UpdateFrequency = TimeSpan.FromMilliseconds(16);
             RenderFrequency = TimeSpan.FromMilliseconds(16);
+            ContentRootPath = Directory.GetCurrentDirectory();
         }
 
+        [SetsRequiredMembers]
         public AppSettings(string[] args) : this()
         {
             WindowSettings = new AppWindowSettings();
         }
 
-        public AppWindowSettings WindowSettings { get; init; }
+        public required AppWindowSettings WindowSettings { get; init; }
 
         public bool EnableHighPeriodTimer { get; init; }
 
@@ -46,5 +50,7 @@ namespace DMinecraft.PhysicalClient
         public TimeSpan UpdateFrequency { get; init; }
 
         public TimeSpan RenderFrequency { get; init; }
+
+        public required string ContentRootPath { get; init; }
     }
 }

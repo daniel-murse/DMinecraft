@@ -1,4 +1,6 @@
-﻿using Serilog;
+﻿using DMinecraft.PhysicalClient.Scheduling.Coroutines.Util;
+using Serilog;
+using System.Collections;
 using System.Reflection;
 
 namespace DMinecraft.PhysicalClient

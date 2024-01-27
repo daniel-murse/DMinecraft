@@ -7,24 +7,47 @@ using System.Threading.Tasks;
 
 namespace DMinecraft.PhysicalClient.Scheduling
 {
+    /// <summary>
+    /// Represents a loop consisting of different callbacks that must be run at different
+    /// intervals. Supports sleeping.
+    /// </summary>
     internal class Loop
     {
         private LoopStageTimer[] timers;
 
+        /// <summary>
+        /// Set to false to stop the loop.
+        /// </summary>
         public bool IsRunning { get; set; }
 
+        /// <summary>
+        /// Substracted from the time left to sleep to account for scheduling errors.
+        /// </summary>
         public TimeSpan SleepError { get; set; }
 
+        /// <summary>
+        /// If sleeping should be done, or busy waiting instead.
+        /// </summary>
         public bool DoSleeping { get; set; }
 
         private DateTime nextStageTime;
 
+        /// <summary>
+        /// Constructs a loop with the specified callbacks in order.
+        /// </summary>
+        /// <param name="stages">The callbacks, in order.</param>
         public Loop(IEnumerable<LoopStage> stages)
         {
             IsRunning = true;
             timers = stages.Select(p => new LoopStageTimer(p)).ToArray();
         }
 
+        /// <summary>
+        /// Runs the loop synchronously until <see cref="IsRunning"/> is set to false.
+        /// Stages are run if their time has come or its past their time.
+        /// Handles sleeping too, based on the time of the next scheduled
+        /// callback.
+        /// </summary>
         public void Run()
         {
             while (IsRunning)

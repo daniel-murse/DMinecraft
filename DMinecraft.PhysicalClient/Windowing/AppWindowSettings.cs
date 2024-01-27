@@ -1,4 +1,5 @@
-﻿using OpenTK.Windowing.Desktop;
+﻿using OpenTK.Windowing.Common;
+using OpenTK.Windowing.Desktop;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,8 @@ namespace DMinecraft.PhysicalClient.Windowing
         public AppWindowSettings()
         {
             NativeWindowSettings = new NativeWindowSettings();
+            NativeWindowSettings.APIVersion = new Version(4, 6);
+            NativeWindowSettings.Flags = ContextFlags.Debug | ContextFlags.ForwardCompatible;
         }
 
         public AppWindowSettings(AppWindowSettings windowSettings)

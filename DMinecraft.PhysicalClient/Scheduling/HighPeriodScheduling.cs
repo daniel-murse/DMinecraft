@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 
 namespace DMinecraft.PhysicalClient.Scheduling
 {
+    /// <summary>
+    /// Attempts to start a high performance (thread) scheduling session with the OS.
+    /// </summary>
     internal class HighPeriodScheduling : IDisposable
     {
         public HighPeriodScheduling()

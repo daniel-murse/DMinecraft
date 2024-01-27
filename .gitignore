@@ -17,7 +17,8 @@
 mono_crash.*
 
 # Build results
-[Dd]ebug/
+#[Dd]ebug/
+#conflicted with Debug folder in source
 [Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/
