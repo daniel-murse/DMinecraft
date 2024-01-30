@@ -144,8 +144,8 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.GLObjects
             {
                 if (value == null || value.Length != 4)
                     throw new ArgumentException();
-                GL.TextureParameterI(Handle, TextureParameterName.TextureSwizzleRgba, swizzle);
                 Array.Copy(value, swizzle, swizzle.Length);
+                GL.TextureParameter(Handle, TextureParameterName.TextureSwizzleRgba, swizzle);
             }
         }
 

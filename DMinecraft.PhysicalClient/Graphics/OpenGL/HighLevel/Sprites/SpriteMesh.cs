@@ -51,12 +51,13 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites
 
                 //bl tl br tr
                 int spriteIndex = i * 6;
-                indices[spriteIndex]     = (ushort)i;//bl
-                indices[spriteIndex + 1] = (ushort)(i + 1);//tl
-                indices[spriteIndex + 2] = (ushort)(i + 2);//br
-                indices[spriteIndex + 3] = (ushort)(i + 1);//tl
-                indices[spriteIndex + 4] = (ushort)(i + 3); //tr
-                indices[spriteIndex + 5] = (ushort)(i + 2);//br
+                int vertIndex = i * 4;
+                indices[spriteIndex]     = (ushort)vertIndex;//bl
+                indices[spriteIndex + 1] = (ushort)(vertIndex + 1);//tl
+                indices[spriteIndex + 2] = (ushort)(vertIndex + 2);//br
+                indices[spriteIndex + 3] = (ushort)(vertIndex + 1);//tl
+                indices[spriteIndex + 4] = (ushort)(vertIndex + 3); //tr
+                indices[spriteIndex + 5] = (ushort)(vertIndex + 2);//br
             }
 
             //CARE immutable ebo

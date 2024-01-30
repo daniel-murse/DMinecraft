@@ -18,10 +18,16 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Text
 
         public Glyph GetGlyphByIndex(uint index)
         {
-            var range = glyphRanges.Where(p => p.Start < index && p.End < index).FirstOrDefault();
+            var range = glyphRanges.Where(p => p.Start <= index && p.End > index).FirstOrDefault();
             if (range == null)
                 throw new FontException("Range not found.");
-            return range.Glyphs[index] ?? throw new FontException("Glyph not found.");
+            return range?.Glyphs[index - range.Start] ?? throw new FontException("Glyph not found.");
+        }
+
+        public Glyph? TryGetGlyphByIndex(uint index)
+        {
+            var range = glyphRanges.Where(p => p.Start <= index && p.End > index).FirstOrDefault();
+            return range?.Glyphs[index - range.Start] ?? null;
         }
     }
 }
