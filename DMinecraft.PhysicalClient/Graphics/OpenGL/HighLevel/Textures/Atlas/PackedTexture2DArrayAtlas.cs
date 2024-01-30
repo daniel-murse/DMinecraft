@@ -41,6 +41,8 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Textures.Atlas
 
         public int CurrentCol { get; private set;}
     
+        // the pixels will assume top is y 0, so will convert the mapping as for gl pixels
+        //start at bottom is y 0
         public PackedTexture2DArrayAtlasItem AddImage(PixelFormat pixelFormat, PixelType pixelType, int rows, int cols, Span<byte> data)
         {
             //row major
@@ -63,10 +65,10 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Textures.Atlas
 
             var coordinates = new PackedTexture2DArrayAtlasItem(
                 this,
-                (byte)(x / (float)Texture.Width * 255),
-                (byte)(y / (float)Texture.Height * 255),
-                (byte)((x + cols) / (float)Texture.Width * 255),
-                (byte)((y + rows) / (float)Texture.Width * 255),
+                (ushort)(x / (float)Texture.Width * ushort.MaxValue),
+                (ushort)((y + rows) / (float)Texture.Height * ushort.MaxValue),
+                (ushort)((x + cols) / (float)Texture.Width * ushort.MaxValue),
+                (ushort)(y / (float)Texture.Height * ushort.MaxValue),
                 CurrentLayer);
             CurrentCol++;
             return coordinates;

@@ -19,6 +19,7 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites
         public GLBuffer Ebo { get; }
 
         public SpriteVertices[] Sprites { get; }
+
         public SpriteVertexDeclaration VertexDeclaration { get; }
 
         public SpriteMesh(GLContext glContext, int capacity, SpriteVertexDeclaration vertexDeclaration, string? name = null)
@@ -29,16 +30,16 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites
                 Vbo.CreateImmutable(capacity * SpriteVertices.SizeBytes, BufferStorageFlags.DynamicStorageBit, nint.Zero);
                 Ebo = new GLBuffer(glContext, name == null ? name : name + "_ebo");
                 Vao = new GLVertexArray(glContext, name);
+                VertexDeclaration = vertexDeclaration;
+                Sprites = new SpriteVertices[capacity];
                 ConfigureVao();
                 InitEbo();
-                Sprites = new SpriteVertices[capacity];
             }
             catch (Exception)
             {
                 Dispose();
                 throw;
             }
-            VertexDeclaration = vertexDeclaration;
         }
 
         private void InitEbo()
@@ -58,7 +59,9 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites
                 indices[spriteIndex + 5] = (ushort)(i + 2);//br
             }
 
-            Ebo.SubData(0, sizeof(ushort) * indices.Length, indices.AsSpan());
+            //CARE immutable ebo
+            Ebo.CreateImmutable(sizeof(ushort) * indices.Length, BufferStorageFlags.None, indices.AsSpan());
+            //Ebo.SubData(0, sizeof(ushort) * indices.Length, indices.AsSpan());
         }
 
         private bool disposedValue;
@@ -100,17 +103,17 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites
         {
             Vao.SetVertexBufferBinding(0, new VertexBufferBinding(SpriteVertex.SizeBytes, 0, Vbo));
             Vao.SetVertexAttributeFormat(VertexDeclaration.PositionLocation, new VertexAttributeFormat(3, VertexAttribType.Float, false, 0, false));
-            Vao.SetVertexAttributeFormat(VertexDeclaration.ColorLocation, new VertexAttributeFormat(4, VertexAttribType.Float, false, 12, false));
-            Vao.SetVertexAttributeFormat(VertexDeclaration.UVLocation, new VertexAttributeFormat(2, VertexAttribType.Float, false, 28, false));
-            Vao.SetVertexAttributeFormat(VertexDeclaration.LayerLocation, new VertexAttributeFormat(1, VertexAttribType.Int, false, 36, true));
+            Vao.SetVertexAttributeFormat(VertexDeclaration.ColorLocation, new VertexAttributeFormat(4, VertexAttribType.UnsignedByte, true, 12, false));
+            Vao.SetVertexAttributeFormat(VertexDeclaration.UVLocation, new VertexAttributeFormat(2, VertexAttribType.UnsignedShort, true, 16, false));
+            Vao.SetVertexAttributeFormat(VertexDeclaration.LayerIndexLocation, new VertexAttributeFormat(2, VertexAttribType.Int, false, 20, true));
             Vao.SetVertexAttributeBinding(VertexDeclaration.PositionLocation, 0);
             Vao.SetVertexAttributeBinding(VertexDeclaration.ColorLocation, 0);
             Vao.SetVertexAttributeBinding(VertexDeclaration.UVLocation, 0);
-            Vao.SetVertexAttributeBinding(VertexDeclaration.LayerLocation, 0);
+            Vao.SetVertexAttributeBinding(VertexDeclaration.LayerIndexLocation, 0);
             Vao.SetVertexAttributeEnabled(VertexDeclaration.PositionLocation, true);
             Vao.SetVertexAttributeEnabled(VertexDeclaration.ColorLocation, true);
             Vao.SetVertexAttributeEnabled(VertexDeclaration.UVLocation, true);
-            Vao.SetVertexAttributeEnabled(VertexDeclaration.LayerLocation, true);
+            Vao.SetVertexAttributeEnabled(VertexDeclaration.LayerIndexLocation, true);
             Vao.IndexBuffer = Ebo;
         }
     }

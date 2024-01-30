@@ -253,5 +253,10 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.GLObjects
         {
             return uniformBlockBindings[blockIndex];
         }
+
+        public void Use()
+        {
+            Context.UseProgram(this);
+        }
     }
 }

@@ -69,7 +69,7 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.GLObjects
 
         public int MaxTextureUnits { get; private set; }
 
-        public int MaxTextureSize { get; private set; }
+        public int MaxTextureDimensionSize { get; private set; }
 
         public int MaxTextureArrayLayers { get; private set; }
 
@@ -106,7 +106,7 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.GLObjects
             MaxUniformBufferBindings = GL.GetInteger(GetPName.MaxUniformBufferBindings);
 
             MaxTextureUnits =  GL.GetInteger(GetPName.MaxCombinedTextureImageUnits);
-            MaxTextureSize = GL.GetInteger(GetPName.MaxTextureSize);
+            MaxTextureDimensionSize = GL.GetInteger(GetPName.MaxTextureSize);
             MaxTextureArrayLayers = GL.GetInteger(GetPName.MaxArrayTextureLayers);
 
             PixelUnpackAlignment = GL.GetInteger(GetPName.UnpackAlignment);
@@ -174,6 +174,11 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.GLObjects
                 GL.BindTextureUnit(unit, texture?.Handle ?? 0);
                 texture2DArrayUnits[unit] = texture;
             }
+        }
+
+        public GLTexture? GetTexture2DArray(int unit)
+        {
+            return texture2DArrayUnits[unit];
         }
 
         public void SetUnpackAlignment(int unpackAlignment)

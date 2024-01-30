@@ -3,7 +3,8 @@ using DMinecraft.PhysicalClient.Graphics.OpenGL.GLObjects;
 using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Lines;
 using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Pipeline;
 using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Shaders.Content;
-using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites.Packed;
+using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites;
+using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites.Debug;
 using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Text.Content;
 using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Textures.Atlas;
 using DMinecraft.PhysicalClient.Scheduling.Coroutines;
@@ -49,7 +50,7 @@ namespace DMinecraft.PhysicalClient.Scenes.Init
             var coroutines = new ITimedCoroutine[]
             {
                 new ShaderCacheCoroutine(ShaderCache, Path.Combine(settings.ContentRoot, "shader/")),
-                new GlyphRangeCreationCoroutine(ftFace, 16, new GlyphRange(1, 63), false, atlas)
+                new FTGlyphRangeCreationCoroutine(ftFace, 1, 63, false, atlas)
             };
             coroutine = new SequentialCoroutinesCoroutine(coroutines.AsEnumerable().GetEnumerator());
             coroutine.Complete();
@@ -72,10 +73,22 @@ namespace DMinecraft.PhysicalClient.Scenes.Init
 
             //glContext.UseProgram(program);
 
-            
+            debugSpriteStage = new DebugSpriteDrawStage(spriteBatch, new SpriteRenderer(spriteProgram));
 
-            
+            //renderPipeline.Stages.Add(debugSpriteStage);
+
+
+            debugSpriteStage.Draw += DebugSpriteStage_Draw;
+
         }
+
+        private void DebugSpriteStage_Draw(DebugSpriteDrawStage obj)
+        {
+            obj.SpriteBatch.ChangeTexture2DArray(atlas.Texture, 0);
+            obj.SpriteBatch.SubmitSpritesAF(1);
+        }
+
+        private DebugSpriteDrawStage debugSpriteStage;
 
         public ShaderCache ShaderCache { get; }
         public InitSceneSettings Settings { get; }
@@ -116,7 +129,7 @@ namespace DMinecraft.PhysicalClient.Scenes.Init
             sprite.Scale = Vector3.One;
             sprite.Size = new Vector3(2, 2, 0);
             sprite.Color = Color4.Red;
-            sprite.Texture = new PackedTexture2DArrayAtlasItem(atlas, 0, 0, 255, 255, 0);
+            sprite.Texture = new PackedTexture2DArrayAtlasItem(atlas, 0, ushort.MaxValue, ushort.MaxValue, 0, 0);
 
 
             var vertices = spriteBatch.SubmitSprites(1);

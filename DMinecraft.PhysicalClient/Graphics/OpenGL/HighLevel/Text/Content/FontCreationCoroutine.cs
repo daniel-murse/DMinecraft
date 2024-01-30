@@ -1,8 +1,9 @@
-﻿using DMinecraft.PhysicalClient.Scheduling.Coroutines;
-using FreeTypeBinding;
+﻿using DMinecraft.PhysicalClient.Graphics.OpenGL.GLObjects;
+using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Textures.Atlas;
+using DMinecraft.PhysicalClient.Scheduling.Coroutines;
+using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,67 +12,39 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Text.Content
 {
     internal unsafe class FontCreationCoroutine : ITimedCoroutine
     {
-        public bool IsCompleted {get; private set;}
+        public PackedTexture2DArrayAtlas Atlas { get; }
 
-        public int FontSizePixels { get; }
+        private FTFontCreationCoroutine coroutine;
 
-        private readonly FT_FaceRec_* ftFace;
-
-        private IEnumerator<GlyphRange> glyphRanges;
-
-        private Stopwatch stopwatch;
-
-        private TimeSpan previousElapsed;
-
-        private GlyphRange? currentRange;
-
-        private uint currentGlyphIndex;
-
-        private TimeSpan maxTimeHint;
-
-        private FT_Render_Mode_ ftRenderMode;
-
-        private uint lastGlyphIndex;
-
-        //private int[]
-
-        public FontCreationCoroutine(FT_FaceRec_* ftFace, IEnumerator<GlyphRange> glyphRanges, int sizePixels, bool isSdf)
+        public FontCreationCoroutine(FreeTypeBinding.FT_FaceRec_* ftFace, HarfBuzzSharp.Face hbFace, IEnumerable<(uint start, uint end)> glyphRanges, int sizePixels, bool isSdf, GLContext glContext)
         {
-            this.ftFace = ftFace;
-            this.glyphRanges = glyphRanges;
-            FontSizePixels = sizePixels;
-            previousElapsed = TimeSpan.Zero;
-            stopwatch = new Stopwatch();
-            ftRenderMode = isSdf ? FT_Render_Mode_.FT_RENDER_MODE_SDF : FT_Render_Mode_.FT_RENDER_MODE_NORMAL;
-            
+            var count = glyphRanges.Sum(p => p.Item2 - p.Item1);
+            var rowCol = glContext.MaxTextureDimensionSize / sizePixels;
+            var depth = (int)Math.Ceiling((float)count / rowCol * rowCol);
+
+
+            Atlas = new PackedTexture2DArrayAtlas(glContext, new PackedTexture2DArrayAtlasOptions() { MipLevels = 1, ImageWidth = sizePixels, ImageHeight = sizePixels, Rows = rowCol, Cols = rowCol, Depth = depth, InternalFormat = InternalFormat.Red});
+            coroutine = new FTFontCreationCoroutine(ftFace, glyphRanges, sizePixels, isSdf, Atlas);
+            HbFace = hbFace;
+            SizePixels = sizePixels;
         }
+
+        public bool IsCompleted { get; private set; }
+        public HarfBuzzSharp.Face HbFace { get; }
+        public int SizePixels { get; }
 
         public void Step(TimeSpan maxTimeHint)
         {
-            if(currentRange == null)
-            {
-                if(glyphRanges.MoveNext())
-                {
-                    if (lastGlyphIndex > glyphRanges.Current.Start)
-                        throw new FontException("Invalid ranges");
-                    currentRange = glyphRanges.Current;
-                    currentGlyphIndex = currentRange.Start;
-                }
-                else
-                {
-                    IsCompleted = true;
-                    return;
-                }
-            }
+            coroutine.Step(maxTimeHint);
 
-            for (uint i = currentGlyphIndex; i < currentRange.Count; i++)
+            if(!IsCompleted)
             {
-                FT.FT_Load_Glyph(ftFace, i, FT_LOAD.FT_LOAD_RENDER);
-                FT.FT_Render_Glyph(ftFace->glyph, ftRenderMode);
+                IsCompleted = coroutine.IsCompleted;
+                var hbFont = new HarfBuzzSharp.Font(HbFace);
+                const int i2e6 = 0b00100000;
+                hbFont.SetScale(SizePixels * i2e6, SizePixels * i2e6);
+                new Font(coroutine.GlyphRanges, hbFont);
             }
-
-            lastGlyphIndex = currentRange.End;
-            currentRange = null;
         }
     }
 }

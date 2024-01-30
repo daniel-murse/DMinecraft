@@ -23,7 +23,7 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites
 
         public PackedTexture2DArrayAtlasItem Texture { get; set; }
 
-        public void ComputeVertices(ref Packed.SpriteVertices vertices)
+        public void ComputeVertices(ref SpriteVertices vertices)
         {
             vertices.BottomLeft.Position = Position;
 

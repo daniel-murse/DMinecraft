@@ -24,7 +24,7 @@ namespace DMinecraft
         {
             public App(string[] args)
             {
-                this.settings = new AppSettings(args) { ContentRootPath = "c:/users/danie/dminecraft/content/"};
+                this.settings = new AppSettings(args) { ContentRootPath = "./res/dminecraft/content/"};
                 this.window = new AppWindow(settings.WindowSettings);
                 //todo use when a logger is passed
                 //new LoggerConfiguration().WriteTo.Logger

@@ -10,14 +10,15 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Text
 {
     internal class Glyph
     {
-        public Glyph(PackedTexture2DArrayAtlasItem texture, Vector2i horiBearing)
-        {
-            Texture = texture;
-            HoriBearing = horiBearing;
-        }
-
         public required PackedTexture2DArrayAtlasItem Texture { get; init; }
 
-        public required Vector2i HoriBearing { get; init; }
+        //26.6 fractional int (cast to float and divide by 2^6 to get the actual pixel value as a decimal)
+        public required int PixelWidth2e6 { get; init; }
+        public required int PixelHeight2e6 { get; init; }
+        public required int PixelHoriBearingX2e6 { get; init; }
+        public required int PixelHoriBearingY2e6 { get; init; }
+        public required int PixelVertBearingX2e6 { get; init; }
+        public required int PixelVertBearingY2e6 { get; init; }
+
     }
 }

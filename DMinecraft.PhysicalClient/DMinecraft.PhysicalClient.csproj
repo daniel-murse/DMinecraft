@@ -24,6 +24,12 @@
     <Folder Include="Graphics\OpenGL\HighLevel\Gltf\" />
     <Folder Include="Graphics\OpenGL\HighLevel\App\" />
     <Folder Include="Graphics\OpenGL\HighLevel\Lines\Clipping\" />
+    <Folder Include="res\" />
+    <Folder Include="UI\Widgets\NewFolder\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="$(ProjectDir)res\" CopyToOutputDirectory="Always" />
   </ItemGroup>
 
 </Project>

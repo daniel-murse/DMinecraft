@@ -15,7 +15,7 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites
         public required int PositionLocation { get; init; }
         public required int ColorLocation { get; init; }
         public required int UVLocation { get; init; }
-        public required int LayerLocation { get; init; }
+        public required int LayerIndexLocation { get; init; }
 
 
         [SetsRequiredMembers]
@@ -24,7 +24,7 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites
             PositionLocation = input.Resources.Where(p => p.Location == 0 && p.Type == (int)All.FloatVec3 && p.ArraySize == 1).FirstOrDefault()?.Location ?? throw new GLGraphicsException("Position not found at location 0.");
             ColorLocation = input.Resources.Where(p => p.Location == 1 && p.Type == (int)All.FloatVec4 && p.ArraySize == 1).FirstOrDefault()?.Location ?? throw new GLGraphicsException("Color not found at location 1.");
             UVLocation = input.Resources.Where(p => p.Location == 2 && p.Type == (int)All.FloatVec2 && p.ArraySize == 1).FirstOrDefault()?.Location ?? throw new GLGraphicsException("UV not found at location 2.");
-            LayerLocation = input.Resources.Where(p => p.Location == 3 && p.Type == (int)All.Int && p.ArraySize == 1).FirstOrDefault()?.Location ?? throw new GLGraphicsException("Layer not found at location 3.");
+            LayerIndexLocation = input.Resources.Where(p => p.Location == 3 && p.Type == (int)All.IntVec2 && p.ArraySize == 1).FirstOrDefault()?.Location ?? throw new GLGraphicsException("Layer & index not found at location 3.");
         }
     }
 }

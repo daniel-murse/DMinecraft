@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Text.Content
+namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites.Optim
 {
-    internal static class FontLoading
+    internal class SpriteResources
     {
+        
     }
 }

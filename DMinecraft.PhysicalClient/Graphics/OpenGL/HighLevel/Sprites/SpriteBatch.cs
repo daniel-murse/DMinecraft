@@ -31,7 +31,7 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites
             SpriteCount = 0;
         }
 
-        public void SubmitLines(Span<SpriteVertices> sprites)
+        public void SubmitSprites(Span<SpriteVertices> sprites)
         {
             if (sprites.Length > Remaining)
             {
@@ -41,7 +41,7 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites
             SpriteCount += sprites.Length;
         }
 
-        public Span<SpriteVertices> SubmitLines(int count)
+        public Span<SpriteVertices> SubmitSprites(int count)
         {
             if (count > Remaining)
                 throw new GLGraphicsException("Sb capacity exceeded.");
@@ -53,7 +53,7 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites
 
         public void Draw()
         {
-            Mesh.Vbo.SubData(0, SpriteCount * LineVertices.SizeBytes, Mesh.Sprites.AsSpan());
+            Mesh.Vbo.SubData(0, SpriteCount * SpriteVertices.SizeBytes, Mesh.Sprites.AsSpan());
             Mesh.Vao.Use();
             GL.DrawElements(PrimitiveType.Triangles, SpriteCount * 6, DrawElementsType.UnsignedShort, 0);
         }
