@@ -24,12 +24,13 @@
     <Folder Include="Graphics\OpenGL\HighLevel\Gltf\" />
     <Folder Include="Graphics\OpenGL\HighLevel\App\" />
     <Folder Include="Graphics\OpenGL\HighLevel\Lines\Clipping\" />
-    <Folder Include="res\" />
     <Folder Include="UI\Widgets\NewFolder\" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="$(ProjectDir)res\" CopyToOutputDirectory="Always" />
-  </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="XCOPY &quot;$(ProjectDir)res&quot; &quot;$(TargetDir)res\&quot; /S /Y" />
+  </Target>
+
+  
 
 </Project>
