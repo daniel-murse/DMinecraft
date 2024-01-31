@@ -97,7 +97,7 @@ namespace DMinecraft
                 window.Resize += OnWindowResize;
 
                 scene = new InitScene(new Graphics.OpenGL.GLObjects.GLContext("dminecraft"), new InitSceneSettings()
-                { ContentRoot = "c:/users/danie/desktop/dminecraft/content" });
+                { ContentRoot = settings.ContentRootPath });
 
                 window.ClientSize = new OpenTK.Mathematics.Vector2i(800, 800);
             }
