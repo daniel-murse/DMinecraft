@@ -49,12 +49,17 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Text
             this.atlas = atlas;
         }
 
-        public void SubmitText(HarfBuzzSharp.Buffer buffer, SpriteBatch spriteBatch, Color4 color)
+        public void SubmitText(HarfBuzzSharp.Buffer buffer, SpriteBatch spriteBatch, Transform transform, Color4 color)
         {
             var glyphs = buffer.GetGlyphInfoSpan();
             var positions = buffer.GetGlyphPositionSpan();
 
             Vector3 cursor = Vector3.Zero;
+            //we want glyphs to keep their origin relative to the whole text dimensions
+            //not their own axis and size (glyphs shouldnt't be individually rotated and scaled)
+            //(thats not what we want unless we want a graphic effect which isnt UI friendly for other purposes)
+
+            //Matrix4 matrix = transform.Matrix;
 
             int glyphIndex = 0;
             while (glyphIndex < glyphs.Length)
@@ -76,46 +81,21 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Text
                         continue;
                     }
 
+                    //26.6 precision conversion factor
                     const int i2e6 = 0b01000000;
 
                     Vector3 position = new Vector3(
                         positions[glyphIndex].XOffset / HBFracScale.X + glyph.PixelHoriBearingX2e6 / i2e6,
                         positions[glyphIndex].YOffset / HBFracScale.Y + (-glyph.PixelHeight2e6 + glyph.PixelHoriBearingY2e6) / i2e6,
                         0);
+
+                    //origin -= cursor;
+
                     position += cursor;
 
-                    sprites[i].BottomLeft.Position = position;
-                    sprites[i].BottomRight.Position = position;
-                    sprites[i].BottomRight.Position.X += glyph.PixelWidth2e6 / (float)i2e6;
-                    sprites[i].TopRight.Position = position;
-                    sprites[i].TopRight.Position.X += glyph.PixelWidth2e6 / (float)i2e6;
-                    sprites[i].TopRight.Position.Y += glyph.PixelHeight2e6 / (float)i2e6;
-                    sprites[i].TopLeft.Position = position;
-                    sprites[i].TopLeft.Position.Y += glyph.PixelHeight2e6 / (float)i2e6;
+                    Vector2 size = new Vector2(glyph.PixelWidth2e6 / (float)i2e6, glyph.PixelHeight2e6 / (float)i2e6);
 
-                    sprites[i].BottomLeft.Index = glyph.Texture.Layer;
-                    sprites[i].BottomRight.Index = glyph.Texture.Layer;
-                    sprites[i].TopLeft.Index = glyph.Texture.Layer;
-                    sprites[i].TopRight.Index = glyph.Texture.Layer;
-
-                    sprites[i].BottomLeft.Color = color.ToRgba();
-                    sprites[i].BottomRight.Color = color.ToRgba();
-                    sprites[i].TopLeft.Color = color.ToRgba();
-                    sprites[i].TopRight.Color = color.ToRgba();
-
-                    sprites[i].BottomLeft.U = glyph.Texture.Left;
-                    sprites[i].BottomLeft.V = glyph.Texture.Bottom;
-                    sprites[i].BottomRight.U = glyph.Texture.Right;
-                    sprites[i].BottomRight.V = glyph.Texture.Bottom;
-                    sprites[i].TopLeft.U = glyph.Texture.Left;
-                    sprites[i].TopLeft.V = glyph.Texture.Top;
-                    sprites[i].TopRight.U = glyph.Texture.Right;
-                    sprites[i].TopRight.V = glyph.Texture.Top;
-
-                    sprites[i].BottomLeft.Layer = glyph.Texture.Layer;
-                    sprites[i].TopLeft.Layer = glyph.Texture.Layer;
-                    sprites[i].BottomRight.Layer = glyph.Texture.Layer;
-                    sprites[i].TopRight.Layer = glyph.Texture.Layer;
+                    sprites[i].Compute(position, transform, size, glyph.Texture.Left, glyph.Texture.Bottom, glyph.Texture.Right, glyph.Texture.Top, glyph.Texture.Layer, 0, color);
 
                     cursor += new Vector3(positions[i].XAdvance, positions[i].YAdvance, 0) / new Vector3(HBFracScale.X, HBFracScale.Y, 1);
                     glyphIndex++;

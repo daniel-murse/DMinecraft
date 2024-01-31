@@ -8,6 +8,7 @@ using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites.Debug;
 using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Text;
 using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Text.Content;
 using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Textures.Atlas;
+using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Util;
 using DMinecraft.PhysicalClient.Scheduling.Coroutines;
 using FreeTypeBinding;
 using OpenTK.Graphics.OpenGL4;
@@ -156,10 +157,13 @@ namespace DMinecraft.PhysicalClient.Scenes.Init
 
             //var vertices = spriteBatch.SubmitSprites(1);
             //sprite.ComputeVertices(ref vertices[0]);
-            
+
+            var transform = new Transform();
+            //transform.Scale *= 5;
+
             TextBuffer textBuffer = new TextBuffer();
             textBuffer.SetText(debugFont, "hi gela");
-            textBuffer.Submit(spriteBatch);
+            textBuffer.Submit(transform, spriteBatch, Color4.Gold);
 
             spriteBatch.Draw();
         }

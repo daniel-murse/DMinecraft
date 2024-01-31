@@ -98,6 +98,8 @@ namespace DMinecraft
 
                 scene = new InitScene(new Graphics.OpenGL.GLObjects.GLContext("dminecraft"), new InitSceneSettings()
                 { ContentRoot = "c:/users/danie/desktop/dminecraft/content" });
+
+                window.ClientSize = new OpenTK.Mathematics.Vector2i(800, 800);
             }
 
             private void OnWindowResize(OpenTK.Windowing.Common.ResizeEventArgs obj)

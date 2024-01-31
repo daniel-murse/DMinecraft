@@ -1,4 +1,5 @@
 ﻿using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites;
+using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Util;
 using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
@@ -13,13 +14,11 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Text
         public TextBuffer()
         {
             HbBuffer = new HarfBuzzSharp.Buffer();
-            Color = Color4.White;
         }
 
         public HarfBuzzSharp.Buffer HbBuffer { get; set; }
 
         public Font? Font { get; set; }
-        public Color4 Color { get; set; }
 
         public void SetText(Font font, string text)
         {
@@ -30,9 +29,9 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Text
             Font.HbFont.Shape(HbBuffer, null);
         }
 
-        public void Submit(SpriteBatch spriteBatch)
+        public void Submit(Transform transform, SpriteBatch spriteBatch, Color4 color)
         {
-            Font?.SubmitText(HbBuffer, spriteBatch, Color);
+            Font?.SubmitText(HbBuffer, spriteBatch, transform, color);
         }
 
         public void Dispose()
