@@ -98,6 +98,9 @@ namespace DMinecraft.PhysicalClient.Scenes.Init
                 }
             };
 
+
+            spriteRenderer = new SpriteRenderer(spriteProgram);
+
         }
 
         private void DebugSpriteStage_Draw(DebugSpriteDrawStage obj)
@@ -135,10 +138,7 @@ namespace DMinecraft.PhysicalClient.Scenes.Init
             GL.Enable(EnableCap.Blend);
             GL.Disable(EnableCap.DepthTest);
             GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
-            Matrix4 matrix = Matrix4.CreateScale((float)Math.Sin(stopwatch.Elapsed.TotalSeconds));
-            matrix = Matrix4.CreateOrthographicOffCenter(-400, 400, -400, 400, -1, 1);
-            spriteRenderer = new SpriteRenderer(spriteProgram);
-            spriteRenderer.Transform.Set(ref matrix);
+            
             spriteRenderer.Albedo.Set(0);
             program.Context.BindTexture2DArray(debugFont.GlyphAtlas.GetGlyphByIndex(2).Texture.Atlas.Texture, 0);
             atlas.Texture.MinFilter = TextureMinFilter.Linear;
@@ -172,6 +172,15 @@ namespace DMinecraft.PhysicalClient.Scenes.Init
         {
             //todo pass down from app or smth
             //coroutine.Step(TimeSpan.FromMilliseconds(8));
+        }
+
+        public void OnClientSizeChanged(Vector2i newSize)
+        {
+            GL.Viewport(0, 0, newSize.X, newSize.Y);
+            var halfSize= newSize / 2;
+            Matrix4 matrix = Matrix4.CreateScale((float)Math.Sin(stopwatch.Elapsed.TotalSeconds));
+            matrix = Matrix4.CreateOrthographicOffCenter(-halfSize.X, halfSize.X, -halfSize.Y, halfSize.Y, -1, 1);
+            spriteRenderer.Transform.Set(ref matrix);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OpenTK.Mathematics;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,5 +13,7 @@ namespace DMinecraft.PhysicalClient.Scenes
         public void Update(TimeSpan deltaTime);
 
         public void Render(TimeSpan deltaTime);
+
+        public void OnClientSizeChanged(Vector2i newSize);
     }
 }

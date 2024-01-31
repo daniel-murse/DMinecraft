@@ -104,7 +104,7 @@ namespace DMinecraft
 
             private void OnWindowResize(OpenTK.Windowing.Common.ResizeEventArgs obj)
             {
-                GL.Viewport(0, 0, obj.Width, obj.Height);
+                scene.OnClientSizeChanged(obj.Size);
             }
 
             private void OnRender(TimeSpan deltaTime)
