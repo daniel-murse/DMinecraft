@@ -11,6 +11,8 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Util
     {
         public static uint ToRgba(this Color4 color)
         {
+            //https://registry.khronos.org/OpenGL-Refpages/gl4/html/unpackUnorm.xhtml
+            //check order of components
             return ((uint)(color.R * 255f) << 24) | ((uint)(color.G * 255f) << 16) | ((uint)(color.B * 255f) << 8) | ((uint)(color.A * 255f));
         }
     }

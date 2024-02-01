@@ -19,16 +19,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Graphics\OpenGL\GLObjects\Data\Textures\" />
+    <Folder Include="Graphics\OpenGL\HighLevel\App\" />
     <Folder Include="Graphics\OpenGL\HighLevel\Common\" />
     <Folder Include="Graphics\OpenGL\HighLevel\Debug\" />
     <Folder Include="Graphics\OpenGL\HighLevel\Gltf\" />
-    <Folder Include="Graphics\OpenGL\HighLevel\App\" />
     <Folder Include="Graphics\OpenGL\HighLevel\Lines\Clipping\" />
     <Folder Include="UI\Widgets\NewFolder\" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="XCOPY &quot;$(ProjectDir)res&quot; &quot;$(TargetDir)res\&quot; /S /Y" />
+    <Exec Command="XCOPY &quot;$(ProjectDir)res&quot; &quot;$(TargetDir)res\&quot; /S /Y /I" />
   </Target>
 
   

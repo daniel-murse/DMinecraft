@@ -1,4 +1,5 @@
 ﻿using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Text.Content;
+using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Textures.Atlas;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,10 +12,13 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Text
     {
         private FTGlyphRange[] glyphRanges;
 
-        public GlyphAtlas(FTGlyphRange[] glyphRanges)
+        public GlyphAtlas(FTGlyphRange[] glyphRanges, PackedTexture2DArrayAtlas atlas)
         {
             this.glyphRanges = glyphRanges;
+            Atlas = atlas;
         }
+
+        public PackedTexture2DArrayAtlas Atlas { get; }
 
         public Glyph GetGlyphByIndex(uint index)
         {

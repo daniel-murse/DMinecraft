@@ -2,6 +2,7 @@
 using DMinecraft.PhysicalClient.Graphics.OpenGL.GLObjects;
 using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Lines;
 using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Pipeline;
+using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Pipeline.Mixed2D;
 using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Shaders.Content;
 using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites;
 using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites.Debug;
@@ -101,6 +102,23 @@ namespace DMinecraft.PhysicalClient.Scenes.Init
 
             spriteRenderer = new SpriteRenderer(spriteProgram);
 
+            var mixedSage = new Mixed2DDrawStage() { GLContext = glContext, SpriteBatch = spriteBatch, SpriteRenderer = spriteRenderer, LineBatch = lineBatch, LineRenderer = lineRenderer };
+            renderPipeline.Stages.Add(mixedSage);
+            mixedSage.OnDraw += MixedSage_OnDraw;
+
+        }
+
+        private void MixedSage_OnDraw(Mixed2DDrawStage obj)
+        {
+            var transform = new Transform();
+            //transform.Scale *= 5;
+            obj.GLContext.BindTexture2DArray(debugFont.Texture, 0);
+            obj.SpriteRenderer.Albedo.Set(0);
+            obj.SpriteRenderer.Program.Use();
+            TextBuffer textBuffer = new TextBuffer();
+            textBuffer.SetText(debugFont, "Hangul script\nIs cool");
+            transform.CenterOrigin(textBuffer.BoundsSize);
+            textBuffer.Submit(transform, obj.SpriteBatch, Color4.Gold);
         }
 
         private void DebugSpriteStage_Draw(DebugSpriteDrawStage obj)
@@ -139,33 +157,7 @@ namespace DMinecraft.PhysicalClient.Scenes.Init
             GL.Disable(EnableCap.DepthTest);
             GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
             
-            spriteRenderer.Albedo.Set(0);
-            program.Context.BindTexture2DArray(debugFont.GlyphAtlas.GetGlyphByIndex(2).Texture.Atlas.Texture, 0);
-            atlas.Texture.MinFilter = TextureMinFilter.Linear;
-            atlas.Texture.MagFilter = TextureMagFilter.Linear;
             renderPipeline.Render(deltaTime);
-
-            spriteBatch.Clear();
-
-            Graphics.OpenGL.HighLevel.Sprites.Sprite sprite = new Graphics.OpenGL.HighLevel.Sprites.Sprite();
-            sprite.Position = new Vector3(-1,-1,0);
-            sprite.Scale = Vector3.One;
-            sprite.Size = new Vector3(2, 2, 0);
-            sprite.Color = Color4.Red;
-            sprite.Texture = new PackedTexture2DArrayAtlasItem(atlas, 0, ushort.MaxValue, ushort.MaxValue, 0, 0);
-
-
-            //var vertices = spriteBatch.SubmitSprites(1);
-            //sprite.ComputeVertices(ref vertices[0]);
-
-            var transform = new Transform();
-            //transform.Scale *= 5;
-
-            TextBuffer textBuffer = new TextBuffer();
-            textBuffer.SetText(debugFont, "hi gela");
-            textBuffer.Submit(transform, spriteBatch, Color4.Gold);
-
-            spriteBatch.Draw();
         }
 
         public void Update(TimeSpan deltaTime)

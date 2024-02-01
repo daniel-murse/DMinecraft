@@ -91,6 +91,7 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.GLObjects
             Name = name;
             uniformBufferBindings = new BufferRange[MaxUniformBufferBindings];
             texture2DArrayUnits = new GLTexture[MaxTextureUnits];
+            freeTextureUnits = new Queue<int>(Enumerable.Range(0, MaxTextureUnits));
         }
 
         private void LoadConstants()
@@ -149,6 +150,9 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.GLObjects
 
         public int BindUniformBuffer(GLBuffer buffer, int offsetBytes, int sizeBytes)
         {
+            //could re implement this with a queue approach where all free things are immediately
+            //in the queue
+            //but this isnt expected to be a performance hit so whatever for nwo
             int i = 0;
             for (; i < uniformBufferBindings.Length; i++)
             {
@@ -179,6 +183,22 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.GLObjects
         public GLTexture? GetTexture2DArray(int unit)
         {
             return texture2DArrayUnits[unit];
+        }
+
+        private Queue<int> freeTextureUnits;
+
+        public int ReserveTextureUnit()
+        {
+            if(freeTextureUnits.TryDequeue(out var unit))
+            {
+                return unit;
+            }
+            throw new GLGraphicsException("No free texture unit.");
+        }
+
+        public void FreeTextureUnit(int unit)
+        {
+            freeTextureUnits.Enqueue(unit);
         }
 
         public void SetUnpackAlignment(int unpackAlignment)

@@ -17,7 +17,7 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites
         /// </summary>
         public Vector3 Position;
         /// <summary>
-        /// byte4 packed color
+        /// rgba byte4 packed color
         /// </summary>
         public uint Color;
         /// <summary>

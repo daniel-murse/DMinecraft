@@ -68,7 +68,10 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Util
             get
             {
                 if (isDirty)
+                {
                     ComputeMatrix(out matrix);
+                    isDirty = false;
+                }
                 return matrix;
             }
 
@@ -84,12 +87,13 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Util
             get
             {
                 if (isDirty)
+                {
                     ComputeMatrix(out matrix);
+                    isDirty = false;
+                }
                 return ref matrix;
             }
         }
-
-        public Quaternion Quaternion { get; set; }
 
         public void ComputeMatrix(out Matrix4 result)
         {

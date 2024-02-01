@@ -1,4 +1,5 @@
-﻿using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites;
+﻿using DMinecraft.PhysicalClient.Graphics.OpenGL.GLObjects;
+using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites;
 using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Text.Content;
 using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Textures.Atlas;
 using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Util;
@@ -18,7 +19,6 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Text
     //or divide the width as a hack to place the caret
     internal class Font : IDisposable
     {
-        private const uint c2e6 = 0b00111111u;
         private bool disposedValue;
         private PackedTexture2DArrayAtlas atlas;
 
@@ -27,6 +27,10 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Text
         public HarfBuzzSharp.Font HbFont { get; }
 
         public Vector2 HBFracScale { get; }
+
+        //single texture fonts make batching easier
+        //otherwise,if glyphs span across unknown textures, the logic is different
+        public GLTexture Texture => GlyphAtlas.Atlas.Texture;
 
         public Font(string path)
         {
@@ -44,7 +48,7 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Text
         public Font(PackedTexture2DArrayAtlas atlas, FTGlyphRange[] glyphs, HarfBuzzSharp.Font font, Vector2 hbFracScale)
         {
             HBFracScale = hbFracScale;
-            GlyphAtlas = new GlyphAtlas(glyphs);
+            GlyphAtlas = new GlyphAtlas(glyphs, atlas);
             HbFont = font;
             this.atlas = atlas;
         }
@@ -101,6 +105,55 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Text
                     glyphIndex++;
                 }
             }
+        }
+
+        public void MeasureText(HarfBuzzSharp.Buffer buffer, out Vector4 bounds, out Vector2 boundsSize)
+        {
+            bounds = Vector4.Zero;
+
+            var glyphs = buffer.GetGlyphInfoSpan();
+            var positions = buffer.GetGlyphPositionSpan();
+
+            var cursor = Vector3.Zero;
+
+            for (int i = 0; i < glyphs.Length; i++)
+            {
+                Glyph? glyph = GlyphAtlas.TryGetGlyphByIndex(glyphs[i].Codepoint);
+                if (glyph == null)
+                {
+                    cursor += new Vector3(positions[i].XAdvance, positions[i].YAdvance, 0) / new Vector3(HBFracScale.X, HBFracScale.Y, 1);
+                    continue;
+                }
+
+                const int i2e6 = 0b01000000;
+
+                Vector2 size = new Vector2(glyph.PixelWidth2e6 / (float)i2e6, glyph.PixelHeight2e6 / (float)i2e6);
+                
+                Vector3 position = new Vector3(
+                        positions[i].XOffset / HBFracScale.X + glyph.PixelHoriBearingX2e6 / i2e6,
+                        positions[i].YOffset / HBFracScale.Y + (-glyph.PixelHeight2e6 + glyph.PixelHoriBearingY2e6) / i2e6,
+                        0) + cursor;
+
+                Vector4 glyphBounds;
+                glyphBounds.X = position.X;
+                glyphBounds.Z = position.X + size.X;
+                glyphBounds.Y = position.Y;
+                glyphBounds.W = position.Y + size.Y;
+                bounds.X = Math.Min(glyphBounds.X, bounds.X);
+                bounds.Y = Math.Min(glyphBounds.Y, bounds.Y);
+                bounds.Z = Math.Max(glyphBounds.Z, bounds.Z);
+                bounds.W = Math.Max(glyphBounds.W, bounds.W);
+
+                cursor += new Vector3(positions[i].XAdvance, positions[i].YAdvance, 0) / new Vector3(HBFracScale.X, HBFracScale.Y, 1);
+            }
+
+            boundsSize = bounds.Zw - bounds.Xy;
+        }
+
+        public void MeasureStatic(HarfBuzzSharp.Buffer buffer)
+        {
+            //returns a measurement that keeps the height constantly proportional to the amount of line
+            //and doesnt do bounds behind the pen start
         }
 
         protected virtual void Dispose(bool disposing)

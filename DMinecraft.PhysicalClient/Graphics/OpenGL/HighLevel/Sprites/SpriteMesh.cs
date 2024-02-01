@@ -104,7 +104,7 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites
         {
             Vao.SetVertexBufferBinding(0, new VertexBufferBinding(SpriteVertex.SizeBytes, 0, Vbo));
             Vao.SetVertexAttributeFormat(VertexDeclaration.PositionLocation, new VertexAttributeFormat(3, VertexAttribType.Float, false, 0, false));
-            Vao.SetVertexAttributeFormat(VertexDeclaration.ColorLocation, new VertexAttributeFormat(4, VertexAttribType.UnsignedByte, true, 12, false));
+            Vao.SetVertexAttributeFormat(VertexDeclaration.ColorLocation, new VertexAttributeFormat(1, VertexAttribType.UnsignedInt, false, 12, true));
             Vao.SetVertexAttributeFormat(VertexDeclaration.UVLocation, new VertexAttributeFormat(2, VertexAttribType.UnsignedShort, true, 16, false));
             Vao.SetVertexAttributeFormat(VertexDeclaration.LayerIndexLocation, new VertexAttributeFormat(2, VertexAttribType.Int, false, 20, true));
             Vao.SetVertexAttributeBinding(VertexDeclaration.PositionLocation, 0);

@@ -13,21 +13,23 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites
     {
         public static void Compute(ref this SpriteVertices sprite, Vector3 position, Transform transform, Vector2 size, ushort texLeft, ushort texBot, ushort texRight, ushort texTop, int layer, int index, Color4 color)
         {
-            /*
-             * We have choices:
-             * A matrix 4
-             */
+            //Vector3.TransformVector ignores the bottom row (translation) in this case :/
+            position -= transform.Origin;
 
             Vector3.TransformVector(position, in transform.RefMatrix, out sprite.BottomLeft.Position);
+            sprite.BottomLeft.Position += transform.Position;
 
             position.X += size.X;
             Vector3.TransformVector(position, in transform.RefMatrix, out sprite.BottomRight.Position);
+            sprite.BottomRight.Position += transform.Position;
 
             position.Y += size.Y;
             Vector3.TransformVector(position, in transform.RefMatrix, out sprite.TopRight.Position);
+            sprite.TopLeft.Position += transform.Position;
 
             position.X -= size.X;
             Vector3.TransformVector(position, in transform.RefMatrix, out sprite.TopLeft.Position);
+            sprite.TopRight.Position += transform.Position;
 
 
             sprite.BottomLeft.Index = layer;
