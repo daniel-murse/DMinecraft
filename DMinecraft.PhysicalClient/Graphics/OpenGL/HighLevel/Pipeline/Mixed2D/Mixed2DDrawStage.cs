@@ -1,23 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DMinecraft.PhysicalClient.Graphics.OpenGL.GLObjects;
 using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Lines;
-using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites;
+using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites.Batches;
+using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites.Optim;
+using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites.Renderers;
 
 namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Pipeline.Mixed2D
 {
     internal class Mixed2DDrawStage : IRenderPipelineStage
     {
-        public required SpriteBatch SpriteBatch { get; set; }
+        [SetsRequiredMembers]
+        public Mixed2DDrawStage(GLContext gLContext, LineRenderBatch defaultLineRenderBatch, SpriteRenderBatch defaultSpriteRenderBatch)
+        {
+            LineRenderBatches = new List<LineRenderBatch>();
+            SpriteRenderBatches = new List<SpriteRenderBatch>();
+            DefaultLineRenderBatch = defaultLineRenderBatch;
+            DefaultSpriteRenderBatch = defaultSpriteRenderBatch;
+            GLContext = gLContext;
+        }
 
-        public required SpriteRenderer SpriteRenderer { get; set; }
+        public LineRenderBatch DefaultLineRenderBatch { get; set; }
 
-        public required LineBatch LineBatch { get; set; }
+        public SpriteRenderBatch DefaultSpriteRenderBatch { get; set; }
 
-        public required LineRenderer LineRenderer { get; set; }
+        public IList<LineRenderBatch> LineRenderBatches { get; }
+
+        public IList<SpriteRenderBatch> SpriteRenderBatches { get; }
 
         public required GLContext GLContext { get; set; }
 
@@ -25,11 +38,41 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Pipeline.Mixed2D
 
         public void Execute()
         {
-            SpriteBatch.Clear();
-            LineBatch.Clear();
+            Clear();
             OnDraw?.Invoke(this);
-            SpriteBatch.Draw();
-            LineBatch.Draw();
+            Flush();
+        }
+
+        private void Flush()
+        {
+            if (LineRenderBatches != null)
+                foreach (var batch in LineRenderBatches)
+                {
+                    batch.Flush();
+                }
+            DefaultLineRenderBatch?.Flush();
+            if (SpriteRenderBatches != null)
+                foreach (var batch in SpriteRenderBatches)
+                {
+                    batch.Flush();
+                }
+            DefaultSpriteRenderBatch?.Flush();
+        }
+
+        private void Clear()
+        {
+            if (LineRenderBatches != null)
+                foreach (var batch in LineRenderBatches)
+                {
+                    batch.LineBatch.Clear();
+                }
+            if (SpriteRenderBatches != null)
+                foreach (var batch in SpriteRenderBatches)
+                {
+                    batch.SpriteBatch.Clear();
+                }
+            DefaultLineRenderBatch?.LineBatch.Clear();
+            DefaultSpriteRenderBatch?.SpriteBatch.Clear();
         }
     }
 }

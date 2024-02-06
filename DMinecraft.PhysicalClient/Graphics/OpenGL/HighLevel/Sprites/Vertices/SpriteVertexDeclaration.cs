@@ -8,8 +8,9 @@ using System.Text;
 using System.Threading.Tasks;
 using OpenTK.Graphics.OpenGL4;
 
-namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites
+namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites.Vertices
 {
+    //representation of shader program input attributes
     internal class SpriteVertexDeclaration
     {
         public required int PositionLocation { get; init; }

@@ -96,7 +96,7 @@ namespace DMinecraft
 
                 window.Resize += OnWindowResize;
 
-                scene = new InitScene(new Graphics.OpenGL.GLObjects.GLContext("dminecraft"), new InitSceneSettings()
+                scene = new OldInitScene(new Graphics.OpenGL.GLObjects.GLContext("dminecraft"), new InitSceneSettings()
                 { ContentRoot = settings.ContentRootPath });
 
                 window.ClientSize = new OpenTK.Mathematics.Vector2i(800, 800);

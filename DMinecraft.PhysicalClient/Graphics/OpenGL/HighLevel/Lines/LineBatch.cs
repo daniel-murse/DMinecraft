@@ -88,5 +88,11 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Lines
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
+
+        internal void Flush()
+        {
+            Draw();
+            Clear();
+        }
     }
 }

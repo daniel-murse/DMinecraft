@@ -7,13 +7,15 @@ using System.Threading.Tasks;
 
 namespace DMinecraft.PhysicalClient.Collections.Generic
 {
-    internal class SparseSet<T> : IEnumerable<T> 
+    internal class SparseList<T> : IEnumerable<T> 
     {
+        private Queue<int> freeIndices;
+
         private int[] indices;
         private T?[] elements;
         private int count;
 
-        public SparseSet(int capacity)
+        public SparseList(int capacity)
         {
             indices = new int[capacity];
             elements = new T[capacity];

@@ -1,5 +1,7 @@
 ﻿using DMinecraft.PhysicalClient.Graphics.OpenGL.GLObjects;
 using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Lines;
+using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites.Meshes;
+using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites.Vertices;
 using OpenTK.Graphics.OpenGL4;
 using System;
 using System.Collections.Generic;
@@ -7,9 +9,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites
+namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites.Batches
 {
-    internal class SpriteBatch
+    internal class SpriteBatch : ISpriteVerticesBatchConsumer
     {
         public SpriteMesh Mesh { get; }
 
@@ -54,8 +56,23 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites
         public void Draw()
         {
             Mesh.Vbo.SubData(0, SpriteCount * SpriteVertices.SizeBytes, Mesh.Sprites.AsSpan());
-            Mesh.Vao.Use();
-            GL.DrawElements(PrimitiveType.Triangles, SpriteCount * 6, DrawElementsType.UnsignedShort, 0);
+            Mesh.UseVao();
+            GL.DrawRangeElements(PrimitiveType.Triangles, 0, SpriteCount * 4, SpriteCount * 6, DrawElementsType.UnsignedShort, 0);
+        }
+
+        public void Flush()
+        {
+            Draw();
+            Clear();
+        }
+
+        public Span<SpriteVertices> SubmitSpritesAF(int sprites)
+        {
+            if (Remaining < sprites)
+            {
+                Flush();
+            }
+            return SubmitSprites(sprites);
         }
 
         private bool disposedValue;

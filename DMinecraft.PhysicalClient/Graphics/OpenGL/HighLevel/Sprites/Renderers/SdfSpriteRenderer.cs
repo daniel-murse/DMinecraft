@@ -7,9 +7,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites
+namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites.Renderers
 {
-    internal class SpriteRenderer
+    internal class SdfSpriteRenderer
     {
         public GLProgram Program { get; }
 
@@ -17,7 +17,7 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites
 
         public Sampler2DArrayUniformInterface Albedo { get; }
 
-        public SpriteRenderer(GLProgram program)
+        public SdfSpriteRenderer(GLProgram program)
         {
             Program = program;
             Transform = new Matrix4UniformInterface(program, program.Interface.Uniform.GetResource(0, (int)All.FloatMat4, 1).Location);

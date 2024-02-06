@@ -8,14 +8,16 @@ using System.Threading.Tasks;
 
 namespace DMinecraft.PhysicalClient.Graphics.OpenGL.GLObjects.Data.VertexArrays
 {
-    internal class VertexBufferBinding
+    //better make it a struct, more optimised. doesnt really have behaviour on its own
+    //and its not intended to propagate changes as its immutable
+    internal struct VertexBufferBinding
     {
         public VertexBufferBinding()
         {
         }
 
         [SetsRequiredMembers]
-        public VertexBufferBinding(int strideBytes, int offsetBytes, GLBuffer buffer)
+        public VertexBufferBinding(int strideBytes, int offsetBytes, GLBuffer? buffer)
         {
             StrideBytes = strideBytes;
             OffsetBytes = offsetBytes;
@@ -26,6 +28,6 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.GLObjects.Data.VertexArrays
 
         public int OffsetBytes { get; init; }
 
-        public required GLBuffer Buffer { get; init; }
+        public required GLBuffer? Buffer { get; init; }
     }
 }

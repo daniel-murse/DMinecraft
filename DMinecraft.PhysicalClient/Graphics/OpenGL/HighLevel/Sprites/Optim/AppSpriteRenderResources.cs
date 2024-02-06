@@ -6,10 +6,8 @@ using System.Threading.Tasks;
 
 namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites.Optim
 {
-    internal class SpriteDrawStageResource
+    internal class AppSpriteRenderResources
     {
-        public SpriteBatch Batch { get; set; }
-
-        public SpriteRenderer Renderer { get; set; }
+        public SpriteRenderBatch DefaultRenderBatch { get; }
     }
 }

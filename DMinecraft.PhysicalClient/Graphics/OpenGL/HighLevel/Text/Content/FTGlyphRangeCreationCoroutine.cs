@@ -28,7 +28,7 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Text.Content
 
         private uint glyphIndex;
 
-        private FT_Render_Mode_ ftRenderMode;
+        private bool isSdf;
 
         private Glyph[] glyphs;
 
@@ -40,7 +40,7 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Text.Content
             this.glyphIndexStart = start;
             this.glyphIndexEnd = end;
             Atlas = atlas;
-            this.ftRenderMode = isSdf ? FT_Render_Mode_.FT_RENDER_MODE_SDF : FT_Render_Mode_.FT_RENDER_MODE_NORMAL;
+            this.isSdf = isSdf;
             this.stopwatch = new Stopwatch();
             this.previousElapsed = TimeSpan.Zero;
             glyphIndex = 0;
@@ -66,9 +66,23 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Text.Content
                 error = FT.FT_Load_Glyph(ftFace, glyphIndex + glyphIndexStart, FT_LOAD.FT_LOAD_DEFAULT);
                 if (error != FT_Error.FT_Err_Ok)
                     throw new FontException();
-                error = FT.FT_Render_Glyph(ftFace->glyph, ftRenderMode);
+                if(isSdf)
+                {
+                    error = FT.FT_Render_Glyph(ftFace->glyph, FT_Render_Mode_.FT_RENDER_MODE_NORMAL);
+                    //could be err here but whatever the 2nd call will catch it probably
+                    error = FT.FT_Render_Glyph(ftFace->glyph, FT_Render_Mode_.FT_RENDER_MODE_SDF);
+                }
+                else
+                {
+                    error = FT.FT_Render_Glyph(ftFace->glyph, FT_Render_Mode_.FT_RENDER_MODE_NORMAL);
+                }
                 if (error != FT_Error.FT_Err_Ok)
-                    throw new FontException();
+                {
+                    //throw new FontException();
+                    glyphIndex++;
+                    continue;
+                    //todo maybe report not finding this
+                }
                 int length = (int)(ftFace->glyph->bitmap.rows * ftFace->glyph->bitmap.width);
                 var atlasItem = Atlas.AddImage(PixelFormat.Red, PixelType.UnsignedByte, (int)ftFace->glyph->bitmap.rows, (int)ftFace->glyph->bitmap.width, new Span<byte>(ftFace->glyph->bitmap.buffer, length));
 

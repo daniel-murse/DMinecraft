@@ -41,30 +41,19 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.GLObjects
             GL.DeleteVertexArray(Handle);
         }
 
-        private VertexBufferBinding?[] vertexBufferBindings;
+        private VertexBufferBinding[] vertexBufferBindings;
 
-        public VertexBufferBinding? GetVertexBufferBinding(int index)
+        public VertexBufferBinding GetVertexBufferBinding(int index)
         {
             EnsureIsVertexBufferBindingIndex(index);
             return vertexBufferBindings[index];
         }
 
-        public void SetVertexBufferBinding(int index, VertexBufferBinding? vertexBufferBinding)
+        public void SetVertexBufferBinding(int index, VertexBufferBinding vertexBufferBinding)
         {
             EnsureIsVertexBufferBindingIndex(index);
-            if (vertexBufferBinding != null && vertexBufferBinding.Buffer != null)
-            {
-                GL.VertexArrayVertexBuffer(Handle, index, vertexBufferBinding.Buffer.Handle, vertexBufferBinding.OffsetBytes, vertexBufferBinding.StrideBytes);
-
-            }
-            else if (vertexBufferBinding == null)
-            {
-                GL.VertexArrayVertexBuffer(Handle, index, 0, 0, 0);
-            }
-            else
-            {
-                throw new ArgumentNullException();
-            }
+            if (vertexBufferBinding.Buffer != null)
+            GL.VertexArrayVertexBuffer(Handle, index, vertexBufferBinding.Buffer?.Handle ?? 0, vertexBufferBinding.OffsetBytes, vertexBufferBinding.StrideBytes);
             vertexBufferBindings[index] = vertexBufferBinding;
         }
 

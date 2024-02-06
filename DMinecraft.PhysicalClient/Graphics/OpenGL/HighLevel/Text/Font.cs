@@ -1,8 +1,10 @@
 ﻿using DMinecraft.PhysicalClient.Graphics.OpenGL.GLObjects;
-using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites;
+using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites.Batches;
+using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Sprites.Vertices;
 using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Text.Content;
 using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Textures.Atlas;
 using DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Util;
+using HarfBuzzSharp;
 using OpenTK.Mathematics;
 using System;
 using System.Collections.Generic;
@@ -28,6 +30,10 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Text
 
         public Vector2 HBFracScale { get; }
 
+        public float HoriLineGap { get; private set; }
+
+        public float VertLineGap { get; private set; }
+
         //single texture fonts make batching easier
         //otherwise,if glyphs span across unknown textures, the logic is different
         public GLTexture Texture => GlyphAtlas.Atlas.Texture;
@@ -51,9 +57,31 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Text
             GlyphAtlas = new GlyphAtlas(glyphs, atlas);
             HbFont = font;
             this.atlas = atlas;
+
+            RetrieveLineGaps();
         }
 
-        public void SubmitText(HarfBuzzSharp.Buffer buffer, SpriteBatch spriteBatch, Transform transform, Color4 color)
+        private void RetrieveLineGaps()
+        {
+            if(HbFont.TryGetHorizontalFontExtents(out FontExtents fontExtents))
+            {
+                if(fontExtents.LineGap == 0)
+                {
+                    fontExtents.LineGap = Math.Abs(fontExtents.Ascender - fontExtents.Descender);
+                }
+                HoriLineGap = fontExtents.LineGap / HBFracScale.X;
+            }
+            if(HbFont.TryGetVerticalFontExtents(out fontExtents))
+            {
+                if (fontExtents.LineGap == 0)
+                {
+                    fontExtents.LineGap = Math.Abs(fontExtents.Ascender - fontExtents.Descender);
+                }
+                VertLineGap = fontExtents.LineGap / HBFracScale.Y;
+            }
+        }
+
+        public void SubmitText(HarfBuzzSharp.Buffer buffer, ISpriteVerticesBatchConsumer spriteBatch, Transform transform, Color4 color)
         {
             var glyphs = buffer.GetGlyphInfoSpan();
             var positions = buffer.GetGlyphPositionSpan();
@@ -109,6 +137,7 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Text
 
         public void MeasureText(HarfBuzzSharp.Buffer buffer, out Vector4 bounds, out Vector2 boundsSize)
         {
+            //measures accurate pixel bounds
             bounds = Vector4.Zero;
 
             var glyphs = buffer.GetGlyphInfoSpan();
@@ -150,10 +179,27 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Text
             boundsSize = bounds.Zw - bounds.Xy;
         }
 
-        public void MeasureStatic(HarfBuzzSharp.Buffer buffer)
+        public void MeasureStaticHorizontal(HarfBuzzSharp.Buffer buffer, out Vector4 bounds, out Vector2 boundsSize)
         {
             //returns a measurement that keeps the height constantly proportional to the amount of line
             //and doesnt do bounds behind the pen start
+
+            //measures accurate pixel bounds
+            bounds = Vector4.Zero;
+
+            bounds.Y = HoriLineGap / HBFracScale.X;
+
+            var glyphs = buffer.GetGlyphInfoSpan();
+            var positions = buffer.GetGlyphPositionSpan();
+
+            var cursor = Vector3.Zero;
+
+            for (int i = 0; i < glyphs.Length; i++)
+            {
+                cursor += new Vector3(positions[i].XAdvance, positions[i].YAdvance, 0) / new Vector3(HBFracScale.X, HBFracScale.Y, 1);
+            }
+
+            boundsSize = bounds.Zw - bounds.Xy;
         }
 
         protected virtual void Dispose(bool disposing)
@@ -184,6 +230,112 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Text
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+        internal void MeasureTextHori(HarfBuzzSharp.Buffer buffer, out MeasureResult measurement)
+        {
+            //measures accurate pixel bounds
+            measurement.RenderBounds = new Vector4(float.MaxValue, float.MaxValue, float.MinValue, float.MinValue);
+
+            var glyphs = buffer.GetGlyphInfoSpan();
+            var positions = buffer.GetGlyphPositionSpan();
+
+            var cursor = Vector3.Zero;
+
+            for (int i = 0; i < glyphs.Length; i++)
+            {
+                Glyph? glyph = GlyphAtlas.TryGetGlyphByIndex(glyphs[i].Codepoint);
+                if (glyph == null)
+                {
+                    cursor += new Vector3(positions[i].XAdvance, positions[i].YAdvance, 0) / new Vector3(HBFracScale.X, HBFracScale.Y, 1);
+                    continue;
+                }
+
+                const int i2e6 = 0b01000000;
+
+                Vector2 size = new Vector2(glyph.PixelWidth2e6 / (float)i2e6, glyph.PixelHeight2e6 / (float)i2e6);
+
+                Vector3 position = new Vector3(
+                        positions[i].XOffset / HBFracScale.X + glyph.PixelHoriBearingX2e6 / i2e6,
+                        positions[i].YOffset / HBFracScale.Y + (-glyph.PixelHeight2e6 + glyph.PixelHoriBearingY2e6) / i2e6,
+                        0) + cursor;
+
+                Vector4 glyphBounds;
+                glyphBounds.X = position.X;
+                glyphBounds.Z = position.X + size.X;
+                glyphBounds.Y = position.Y;
+                glyphBounds.W = position.Y + size.Y;
+
+                measurement.RenderBounds.X = Math.Min(glyphBounds.X, measurement.RenderBounds.X);
+                measurement.RenderBounds.Y = Math.Min(glyphBounds.Y, measurement.RenderBounds.Y);
+                measurement.RenderBounds.Z = Math.Max(glyphBounds.Z, measurement.RenderBounds.Z);
+                measurement.RenderBounds.W = Math.Max(glyphBounds.W, measurement.RenderBounds.W);
+
+                cursor += new Vector3(positions[i].XAdvance, positions[i].YAdvance, 0) / new Vector3(HBFracScale.X, HBFracScale.Y, 1);
+            }
+
+            measurement.RenderSize = measurement.RenderBounds.Zw - measurement.RenderBounds.Xy;
+
+            measurement.FormatBounds.X = Math.Min(0, cursor.X);
+            measurement.FormatBounds.Z = Math.Max(0, cursor.X);
+            measurement.FormatBounds.Y = 0;
+            measurement.FormatBounds.W = HoriLineGap;
+
+            measurement.FormatSize = measurement.FormatBounds.Zw - measurement.FormatBounds.Xy;
+        }
+
+        internal void MeasureTextVert(HarfBuzzSharp.Buffer buffer, out MeasureResult measurement)
+        {
+            //measures accurate pixel bounds
+            measurement.RenderBounds = new Vector4(float.MaxValue, float.MaxValue, float.MinValue, float.MinValue);
+
+            var glyphs = buffer.GetGlyphInfoSpan();
+            var positions = buffer.GetGlyphPositionSpan();
+
+            var cursor = Vector3.Zero;
+
+            for (int i = 0; i < glyphs.Length; i++)
+            {
+                Glyph? glyph = GlyphAtlas.TryGetGlyphByIndex(glyphs[i].Codepoint);
+                if (glyph == null)
+                {
+                    cursor += new Vector3(positions[i].XAdvance, positions[i].YAdvance, 0) / new Vector3(HBFracScale.X, HBFracScale.Y, 1);
+                    continue;
+                }
+
+                const int i2e6 = 0b01000000;
+
+                Vector2 size = new Vector2(glyph.PixelWidth2e6 / (float)i2e6, glyph.PixelHeight2e6 / (float)i2e6);
+
+                Vector3 position = new Vector3(
+                        positions[i].XOffset / HBFracScale.X + glyph.PixelHoriBearingX2e6 / i2e6,
+                        positions[i].YOffset / HBFracScale.Y + (-glyph.PixelHeight2e6 + glyph.PixelHoriBearingY2e6) / i2e6,
+                        0) + cursor;
+
+                Vector4 glyphBounds;
+                glyphBounds.X = position.X;
+                glyphBounds.Z = position.X + size.X;
+                glyphBounds.Y = position.Y;
+                glyphBounds.W = position.Y + size.Y;
+
+                measurement.RenderBounds.X = Math.Min(glyphBounds.X, measurement.RenderBounds.X);
+                measurement.RenderBounds.Y = Math.Min(glyphBounds.Y, measurement.RenderBounds.Y);
+                measurement.RenderBounds.Z = Math.Max(glyphBounds.Z, measurement.RenderBounds.Z);
+                measurement.RenderBounds.W = Math.Max(glyphBounds.W, measurement.RenderBounds.W);
+
+                cursor += new Vector3(positions[i].XAdvance, positions[i].YAdvance, 0) / new Vector3(HBFracScale.X, HBFracScale.Y, 1);
+            }
+
+            measurement.RenderSize = measurement.RenderBounds.Zw - measurement.RenderBounds.Xy;
+
+            //TODO this needs to be checked it if is like this
+            //could be not, might need info about the hb direction used
+            measurement.FormatBounds.X = 0;
+            measurement.FormatBounds.Z = VertLineGap;
+            measurement.FormatBounds.Y = Math.Min(0, cursor.Y);
+            measurement.FormatBounds.W = Math.Max(0, cursor.Y);
+
+            measurement.FormatSize = measurement.FormatBounds.Zw - measurement.FormatBounds.Xy;
         }
     }
 }

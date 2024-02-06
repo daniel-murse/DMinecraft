@@ -22,5 +22,10 @@ namespace DMinecraft.PhysicalClient.Graphics.OpenGL.HighLevel.Lines
             Transform = new Matrix4UniformInterface(program, 0);
             Program = program;
         }
+
+        internal void UseProgram()
+        {
+            Program.Use();
+        }
     }
 }
